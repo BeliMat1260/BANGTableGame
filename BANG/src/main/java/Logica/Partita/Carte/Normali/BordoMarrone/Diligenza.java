@@ -23,7 +23,7 @@ public class Diligenza extends BordoMarrone{
     @Override
     public void ApplicaEffetto(Gioco gioco, Giocatore giocatore) {
         for (int i = 0; i < 2; i++) {
-            giocatore.carte.add(gioco.mazzo.removeFirst());
+            giocatore.carte.add(gioco.pescaDalMazzo());
         }
     }
 

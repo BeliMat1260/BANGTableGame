@@ -33,6 +33,19 @@ public abstract class Carta implements Serializable {
         return seme;
     }
 
+    /** L'ultima lettera del seme è il seme vero: C cuori, Q quadri, P picche, F fiori. */
+    public boolean eCuori() {
+        return seme != null && !seme.isEmpty() && seme.charAt(seme.length() - 1) == 'C';
+    }
+
+    public boolean eRosso() {
+        if (seme == null || seme.isEmpty()) {
+            return false;
+        }
+        char suit = seme.charAt(seme.length() - 1);
+        return suit == 'C' || suit == 'Q';
+    }
+
     public String toString() {
         return " " +  getClass().getSimpleName() + " " + getSeme() + " mettere descrizione";
     }

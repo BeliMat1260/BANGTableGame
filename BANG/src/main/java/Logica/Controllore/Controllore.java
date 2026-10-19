@@ -26,6 +26,10 @@ public class Controllore {
     private MenuScene menuScene;
     private final File file = new File("Bang.ser");
 
+    public Controllore(Gioco gioco) {
+        this.gioco = gioco;
+    }
+
     public Controllore() {
 
         //Thread per startare la grafica
@@ -170,16 +174,15 @@ public class Controllore {
      */
     public Carta pesca(Giocatore Giocatore, boolean Mazzo, boolean Seconda) {
         Carta carta;
-        if (gioco.mazzo.size() < 10) {
-            gioco.mazzo.addAll(gioco.scarti);
-            gioco.scarti.clear();
-        }
         if (Mazzo) {
+            if (gioco.scarti.isEmpty()) {
+                throw new java.util.NoSuchElementException("Scarti vuoti");
+            }
             carta = gioco.scarti.removeLast();
         } else {
-            carta = gioco.mazzo.removeFirst();
-            if (Seconda && (carta.getSeme().contains("C") || carta.getSeme().contains("Q")) && Giocatore.tabellone.getPersonaggio().equals(Personaggio.BLACK_JACK)) {
-                Giocatore.carte.add(gioco.mazzo.removeFirst());
+            carta = gioco.pescaDalMazzo();
+            if (Seconda && carta.eRosso() && Giocatore.tabellone.getPersonaggio().equals(Personaggio.BLACK_JACK)) {
+                Giocatore.carte.add(gioco.pescaDalMazzo());
             }
         }
         Giocatore.carte.add(carta);
@@ -224,12 +227,11 @@ public class Controllore {
      */
     public boolean vultureSam(int index) {
         boolean flag = false;
-        for (int i = 0; i < 3; i++) {
-            if (i != index) {
-                if (gioco.giocatori[i].getVita() == 0) {
-                    flag = true;
-                    gioco.giocatori[index].carte.addAll(gioco.giocatori[i].carte);
-                }
+        for (int i = 0; i < 4; i++) {
+            if (i != index && gioco.giocatori[i].getVita() <= 0 && !gioco.giocatori[i].carte.isEmpty()) {
+                flag = true;
+                gioco.giocatori[index].carte.addAll(gioco.giocatori[i].carte);
+                gioco.giocatori[i].carte.clear();
             }
         }
         return flag;
@@ -244,13 +246,13 @@ public class Controllore {
      * @return true se va tutto a buon fine
      */
     public boolean sidKetchum(Giocatore giocatore, int carta1, int carta2) {
-        Carta temp;
-        temp = giocatore.carte.get(carta1);
-        giocatore.carte.remove(carta1);
-        gioco.scarti.add(temp);
-        temp = giocatore.carte.get(carta2);
-        giocatore.carte.remove(carta2);
-        gioco.scarti.add(temp);
+        if (carta1 == carta2 || carta1 < 0 || carta2 < 0 || carta1 >= giocatore.carte.size() || carta2 >= giocatore.carte.size()) {
+            return false;
+        }
+        int prima = Math.max(carta1, carta2);
+        int seconda = Math.min(carta1, carta2);
+        gioco.scarti.add(giocatore.carte.remove(prima));
+        gioco.scarti.add(giocatore.carte.remove(seconda));
         giocatore.setVita(giocatore.getVita() + 1);
         return true;
     }
@@ -261,16 +263,9 @@ public class Controllore {
      * @param giocatore il giocatore corrente che deve scartare le carte
      */
     public void scarta(Giocatore giocatore) {
-        while (true) {
-            try {
-                if (giocatore.carte.size() > giocatore.getVita()) {
-                    Carta carta = giocatore.carte.remove((int) (Math.random() * 5));
-                    gioco.scarti.add(carta);
-                } else {
-                    break;
-                }
-            } catch (IndexOutOfBoundsException ignored) {
-            }
+        while (giocatore.carte.size() > giocatore.getVita()) {
+            int index = (int) (Math.random() * giocatore.carte.size());
+            gioco.scarti.add(giocatore.carte.remove(index));
         }
     }
 
@@ -319,18 +314,16 @@ public class Controllore {
      * Serve per incrementare il turno e controlla e gestisce il personaggio Suzy LaFayette
      */
     public void incrementaTurno() {
-        if (gioco.giocatori[getTurno()].tabellone.getPersonaggio().equals(Personaggio.SUZY_LAFAYETTE) && gioco.giocatori[getTurno()].carte.isEmpty()) {
-            gioco.giocatori[getTurno()].carte.add(gioco.mazzo.removeLast());
+        Giocatore attuale = gioco.giocatori[getTurno()];
+        if (attuale.getVita() > 0 && attuale.tabellone.getPersonaggio().equals(Personaggio.SUZY_LAFAYETTE) && attuale.carte.isEmpty()) {
+            attuale.carte.add(gioco.pescaDalMazzo());
         }
-        for (int i = 0; i < 4; i++) {
-            if (gioco.giocatori[i].getVita() <= 0) {
-                gioco.giocatori[i].setLock(true);
+        for (int passo = 1; passo <= 4; passo++) {
+            int prossimo = (gioco.turno + passo) % 4;
+            if (gioco.giocatori[prossimo].getVita() > 0) {
+                gioco.turno = prossimo;
+                return;
             }
-        }
-        if (gioco.turno == (getVivo() - 1)) {
-            gioco.turno = 0;
-        } else {
-            gioco.turno++;
         }
     }
 
@@ -341,11 +334,6 @@ public class Controllore {
      */
     public void usacarta(Giocatore giocatore, Carta carta) {
         carta.ApplicaEffetto(gioco, giocatore);
-        if (giocatore.tabellone.getPersonaggio().equals(Personaggio.ROSE_DOOLAN)) {
-            Armi arma = giocatore.tabellone.getArma();
-            arma.setDistanza(arma.getDistanza() + 1);
-            giocatore.tabellone.setArma(arma);
-        }
         if (carta.getClass().getSimpleName().equals("Mirino") || carta.getClass().getSimpleName().equals("Mustang") || carta.getClass().getSimpleName().equals("Remington") || carta.getClass().getSimpleName().equals("RevCarabine") || carta.getClass().getSimpleName().equals("Schofield") || carta.getClass().getSimpleName().equals("Volcanic") || carta.getClass().getSimpleName().equals("Whinchester")) {
             giocatore.carte.remove(carta);
         } else {
@@ -391,7 +379,7 @@ public class Controllore {
             }
             gioco.scarti.add(carta);
             spara.carte.remove(carta);
-            spara.setLock(true);
+            spara.setHaSparato(true);
             return true;
         } else { // duello
             gioco.scarti.add(carta);
@@ -438,38 +426,36 @@ public class Controllore {
      */
     public ArrayList<Giocatore> distanzaGiocatori(int index) {
         ArrayList<Giocatore> giocatori = new ArrayList<>();
-        int temp = gioco.giocatori[index].tabellone.getArma().getDistanza();
-        if (temp == 1) {
-            if (index == 0) {
-                if (gioco.giocatori[3].getVita() > 0) {
-                    giocatori.add(gioco.giocatori[3]);
-                }
-                if (gioco.giocatori[1].getVita() > 0) {
-                    giocatori.add(gioco.giocatori[1]);
-                }
-            } else if (index == 3) {
-                if (gioco.giocatori[0].getVita() > 0) {
-                    giocatori.add(gioco.giocatori[0]);
-                }
-                if (gioco.giocatori[2].getVita() > 0) {
-                    giocatori.add(gioco.giocatori[2]);
-                }
-            } else {
-                if (gioco.giocatori[index - 1].getVita() > 0) {
-                    giocatori.add(gioco.giocatori[index - 1]);
-                }
-                if (gioco.giocatori[index + 1].getVita() > 0) {
-                    giocatori.add(gioco.giocatori[index + 1]);
-                }
+        Giocatore da = gioco.giocatori[index];
+        int portata = da.tabellone.getArma().getDistanza();
+        if (da.tabellone.getPersonaggio().equals(Personaggio.ROSE_DOOLAN)) {
+            portata++;
+        }
+        for (int i = 0; i < 4; i++) {
+            if (i == index || gioco.giocatori[i].getVita() <= 0) {
+                continue;
             }
-        } else {
-            for (int i = 0; i < 4; i++) {
-                if (i != index) {
-                    giocatori.add(gioco.giocatori[i]);
-                }
+            int posti = Math.min(Math.abs(index - i), 4 - Math.abs(index - i));
+            if (haMustang(gioco.giocatori[i])) {
+                posti++;
+            }
+            if (gioco.giocatori[i].tabellone.getPersonaggio().equals(Personaggio.PAUL_REGRET)) {
+                posti++;
+            }
+            if (posti <= portata) {
+                giocatori.add(gioco.giocatori[i]);
             }
         }
         return giocatori;
+    }
+
+    private boolean haMustang(Giocatore giocatore) {
+        for (Carta carta : giocatore.tabellone.carteT) {
+            if (carta instanceof Mustang) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -528,8 +514,7 @@ public class Controllore {
      * @return la carta estratta e messa nel mazzo degli scart
      */
     public Carta estrai() {
-        Carta carta = gioco.mazzo.getFirst();
-        gioco.mazzo.removeFirst();
+        Carta carta = gioco.pescaDalMazzo();
         gioco.scarti.add(carta);
         return carta;
     }
@@ -573,11 +558,6 @@ public class Controllore {
             gioco.giocatori[i].carte.add(gioco.mazzo.removeFirst());
         }
         gioco.giocatori[i].tabellone = new Tabellone(gioco.ruoli.removeFirst(), gioco.personaggi.removeFirst());
-        if (gioco.giocatori[i].tabellone.getPersonaggio().equals(Personaggio.ROSE_DOOLAN)) {
-            Armi arma = gioco.giocatori[i].tabellone.getArma();
-            arma.setDistanza(arma.getDistanza() + 1);
-            gioco.giocatori[i].tabellone.setArma(arma);
-        }
     }
 
     /**
@@ -589,7 +569,7 @@ public class Controllore {
         if (gioco.scarti.getLast().getClass().getSimpleName().equals("Mancato") || gioco.scarti.getLast().getClass().getSimpleName().equals("Birra")) {
             return true;
         }
-        return gioco.scarti.getLast().getClass().getSimpleName().equals("Barile") && gioco.scarti.get(gioco.scarti.size() - 2).getSeme().contains("C");
+        return gioco.scarti.getLast().getClass().getSimpleName().equals("Barile") && gioco.scarti.get(gioco.scarti.size() - 2).eCuori();
     }
 
     /**
@@ -608,8 +588,8 @@ public class Controllore {
      *
      * @param index carta 1
      */
-    public void togliCarte(int index) {
-        gioco.mazzo.remove(index);
+    public void rimettiInCima(ArrayList<Carta> carte) {
+        gioco.mazzo.addAll(0, carte);
     }
 
     /**

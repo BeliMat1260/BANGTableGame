@@ -13,6 +13,7 @@ class EmporioTest {
         Gioco gioco = new Gioco();
         for (int i = 0; i < 4; i++) {
             gioco.giocatori[i] = new Giocatore();
+            gioco.giocatori[i].setVita(4);
         }
         Bang bang = new Bang("1");
         Bang bang1 = new Bang("2");
@@ -23,9 +24,10 @@ class EmporioTest {
         gioco.mazzo.add(bang2);
         gioco.mazzo.add(bang3);
         new Emporio("0").ApplicaEffetto(gioco,gioco.giocatori[0]);
-        assertEquals(bang3,gioco.giocatori[0].carte.getLast());
-        assertEquals(bang2,gioco.giocatori[1].carte.getLast());
-        assertEquals(bang1,gioco.giocatori[2].carte.getLast());
-        assertEquals(bang,gioco.giocatori[3].carte.getLast());
+        assertEquals(bang,gioco.giocatori[0].carte.getLast());
+        assertEquals(bang1,gioco.giocatori[1].carte.getLast());
+        assertEquals(bang2,gioco.giocatori[2].carte.getLast());
+        assertEquals(bang3,gioco.giocatori[3].carte.getLast());
+        assertTrue(gioco.mazzo.isEmpty());
     }
 }

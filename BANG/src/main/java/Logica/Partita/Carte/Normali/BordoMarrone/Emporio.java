@@ -22,8 +22,10 @@ public class Emporio extends BordoMarrone{
      */
     @Override
     public void ApplicaEffetto(Gioco gioco, Giocatore giocatore) {
-        for (int i = 0; i < 4; i++) {
-            gioco.giocatori[i].carte.add(gioco.mazzo.getFirst());
+        for (int i = 0; i < gioco.giocatori.length; i++) {
+            if (gioco.giocatori[i] != null && gioco.giocatori[i].getVita() > 0) {
+                gioco.giocatori[i].carte.add(gioco.pescaDalMazzo());
+            }
         }
     }
 

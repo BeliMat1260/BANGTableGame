@@ -1,5 +1,6 @@
 package Logica.Partita.Carte.Normali.BordoBlu;
 
+import Logica.Partita.Carte.Normali.Carta;
 import Logica.Partita.Gestione.Giocatore;
 import Logica.Partita.Gestione.Gioco;
 
@@ -22,11 +23,10 @@ public class   Barile extends Estrazione {
      */
     @Override
     public void ApplicaEffetto(Gioco gioco, Giocatore giocatore) {
-        if (gioco.mazzo.get(0).getSeme().contains("C")) {
-            gioco.scarti.add(gioco.mazzo.remove(0));
-        } else {
-            gioco.scarti.add(gioco.mazzo.remove(0));
-            giocatore.setVita(giocatore.getVita()-1);
+        Carta pescata = gioco.pescaDalMazzo();
+        gioco.scarti.add(pescata);
+        if (!pescata.eCuori()) {
+            giocatore.setVita(giocatore.getVita() - 1);
         }
     }
 

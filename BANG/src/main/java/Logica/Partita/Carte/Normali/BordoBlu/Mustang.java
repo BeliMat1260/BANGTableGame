@@ -22,14 +22,8 @@ public class Mustang extends Permanenti{
      */
     @Override
     public void ApplicaEffetto(Gioco gioco, Giocatore giocatore) {
-        giocatore.tabellone.carteT.add(this);
-        for (int i = 0; i < 4; i++) {
-            if (!gioco.giocatori[i].equals(giocatore)) {
-                giocatore.tabellone.carteT.add(this);
-                Armi arma = giocatore.tabellone.getArma();
-                arma.setDistanza(arma.getDistanza() - 1);
-                giocatore.tabellone.setArma(arma);
-            }
+        if (!giocatore.tabellone.carteT.contains(this)) {
+            giocatore.tabellone.carteT.add(this);
         }
     }
 
