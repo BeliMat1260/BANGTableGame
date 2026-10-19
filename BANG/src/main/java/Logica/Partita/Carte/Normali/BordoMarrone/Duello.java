@@ -46,13 +46,13 @@ public class Duello extends BordoMarrone{
             }
         } while (flag && flag2);
         if (!flag) {
-            if (bersaglio.tabellone.getPersonaggio().equals(Personaggio.BART_CASSIDY)) {
-                bersaglio.carte.add(gioco.mazzo.removeFirst());
+            if (bersaglio.tabellone != null && bersaglio.tabellone.getPersonaggio().equals(Personaggio.BART_CASSIDY)) {
+                bersaglio.carte.add(gioco.pescaDalMazzo());
             }
             bersaglio.setVita(bersaglio.getVita()-1);
         } else {
-            if (spara.tabellone.getPersonaggio().equals(Personaggio.BART_CASSIDY)) {
-                spara.carte.add(gioco.mazzo.removeFirst());
+            if (spara.tabellone != null && spara.tabellone.getPersonaggio().equals(Personaggio.BART_CASSIDY)) {
+                spara.carte.add(gioco.pescaDalMazzo());
             }
             spara.setVita(spara.getVita()-1);
         }

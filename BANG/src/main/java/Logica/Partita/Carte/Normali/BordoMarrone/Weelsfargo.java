@@ -23,7 +23,7 @@ public class Weelsfargo extends BordoMarrone {
     @Override
     public void ApplicaEffetto(Gioco gioco, Giocatore giocatore) {
         for (int i = 0; i < 3; i++) {
-            giocatore.carte.add(gioco.mazzo.removeFirst());
+            giocatore.carte.add(gioco.pescaDalMazzo());
         }
     }
 
@@ -33,6 +33,6 @@ public class Weelsfargo extends BordoMarrone {
      */
     @Override
     public String toString() {
-        return " Weels Fargo " + getSeme() + " L'effetto è che tutti i giocatori in gioco recuperano un punto vita. ";
+        return " Weels Fargo " + getSeme() + " Pesca tre carte dalla cima del mazzo.";
     }
 }

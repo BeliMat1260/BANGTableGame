@@ -12,6 +12,7 @@ public class Giocatore implements Serializable {
     public ArrayList<Carta> carte = new ArrayList<>();
     public Tabellone tabellone;
     private boolean lock = false;
+    private boolean haSparato = false;
 
     /**
      * Serve per sapere se il giocatore è lockato( è in prigione)
@@ -27,6 +28,15 @@ public class Giocatore implements Serializable {
      */
     public void setLock(boolean lock) {
         this.lock = lock;
+    }
+
+    /** True se in questo turno ha già giocato un Bang e non ha Volcanic o Willy the Kid. */
+    public boolean haSparato() {
+        return haSparato;
+    }
+
+    public void setHaSparato(boolean haSparato) {
+        this.haSparato = haSparato;
     }
 
     /**

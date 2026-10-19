@@ -31,9 +31,9 @@ public class Bang extends BordoMarrone {
     public boolean ApplicaEffetto(Giocatore spara, Giocatore bersaglio) {
         //controllare il personaggio e l' arma
         if (spara.tabellone.getArma().getSeme().equals("10P") || spara.tabellone.getArma().getSeme().equals("10F") || spara.tabellone.getPersonaggio().equals(Personaggio.WILLY_THE_KID)) {
-            spara.setLock(false);
+            spara.setHaSparato(false);
         }
-        return !spara.isLock();
+        return !spara.haSparato();
     }
 
     /**

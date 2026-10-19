@@ -49,7 +49,7 @@ public class GiocoCLI {
                     if (giocatore.tabellone.getPersonaggio().equals(Personaggio.LUCKY_DUKE)) {
                         Carta temp = controllore.estrai();
                         showStart("Le carte estratte sono \n1-" + temporanea.toString() + "2-" + temp.toString());
-                        if (temporanea.getSeme().contains("C") || temp.getSeme().contains("C")) {
+                        if (temporanea.eCuori() || temp.eCuori()) {
                             showGreen("Sei fuori dalla prigione continua il turno normalmete");
                             giocatore.setLock(false);
                         } else {
@@ -57,7 +57,7 @@ public class GiocoCLI {
                         }
                     } else {
                         showStart("La carta estratta è " + temporanea.toString());
-                        if (temporanea.getSeme().contains("C")) {
+                        if (temporanea.eCuori()) {
                             showGreen("Sei fuori dalla prigione continua il turno normalmete");
                             giocatore.setLock(false);
                         } else {
@@ -147,7 +147,6 @@ public class GiocoCLI {
                                 }
                             } while (nS < 1 || nS > cartekit.size());
                             giocatore.carte.add(cartekit.get(nS - 1));
-                            controllore.togliCarte(nS - 1);
                             cartekit.remove(nS - 1);
                             showGreen("Hai pescato correttamente");
                         } else {
@@ -159,6 +158,9 @@ public class GiocoCLI {
                                 showGreen("Hai pescato la carta" + carta);
                             }
                         }
+                    }
+                    if (cartekit != null && !cartekit.isEmpty()) {
+                        controllore.rimettiInCima(cartekit);
                     }
 
                     String scelta;
@@ -224,6 +226,10 @@ public class GiocoCLI {
                                                 case "Bang" -> {
                                                     while (true) {
                                                         ArrayList<Giocatore> stampati = stampaPlayerB();
+                                                        if (stampati.isEmpty()) {
+                                                            showError("Nessun bersaglio a portata");
+                                                            break;
+                                                        }
                                                         int nS = 0;
                                                         do {
                                                             try {
@@ -233,12 +239,9 @@ public class GiocoCLI {
                                                             } catch (NumberFormatException e) {
                                                                 showError("PLAYER NON VALIDO");
                                                             }
-                                                        } while (nS < 1 || nS > giocatore.carte.size() + 1);
+                                                        } while (nS < 1 || nS > stampati.size());
 
-                                                        if (nS > controllore.getVivo() - 1) {
-                                                            showError("Player non valido");
-                                                        } else {
-                                                            if (controllore.usacarta(giocatore, stampati.get(nS - 1), giocatore.carte.get(sc), true)) {
+                                                        if (controllore.usacarta(giocatore, stampati.get(nS - 1), giocatore.carte.get(sc), true)) {
                                                                 if (controllore.difesa(stampati.get(nS - 1)) != null) {
                                                                     showStart("Giocatore " + stampati.get(nS - 1).getNickname() + "\nScegli che carta giocare per difenderti dal bang");
                                                                     stampaMazzo(controllore.difesa(stampati.get(nS - 1)));
@@ -286,11 +289,10 @@ public class GiocoCLI {
                                                                     }
                                                                     showGreen("Il giocatore " + stampati.get(nS - 1).getNickname() + " ha perso un punto vita");
                                                                 }
-                                                            } else {
-                                                                showError("hai già giocato un bang in questo turno");
-                                                            }
-                                                            break;
+                                                        } else {
+                                                            showError("hai già giocato un bang in questo turno");
                                                         }
+                                                        break;
                                                     }
                                                 }
 
@@ -510,6 +512,7 @@ public class GiocoCLI {
                 }
                 controllore.saveGame();
                 controllore.incrementaTurno();
+                giocatore.setHaSparato(false);
                 giocatore.setLock(false);
             }
         }
@@ -552,13 +555,12 @@ public class GiocoCLI {
      */
     public ArrayList<Giocatore> stampaPlayer(Giocatore giocatore) {
         ArrayList<Giocatore> giocatori = new ArrayList<>();
-        for (int i = 0; i < controllore.getVivo(); i++) {
-            giocatori.add(controllore.getGiocatore(i));
-        }
-        for (int i = 0; i < giocatori.size(); i++) {
-            if (giocatori.get(i).tabellone.getRuolo().equals(Ruolo.SCERIFFO) || giocatori.get(i).equals(giocatore)) {
-                giocatori.remove(i);
+        for (int i = 0; i < 4; i++) {
+            Giocatore altro = controllore.getGiocatore(i);
+            if (altro == giocatore || altro.getVita() <= 0 || altro.tabellone.getRuolo().equals(Ruolo.SCERIFFO)) {
+                continue;
             }
+            giocatori.add(altro);
         }
         for (int i = 0; i < giocatori.size(); i++) {
             System.out.println("Giocatore " + (i + 1) + ": " + giocatori.get(i).getNickname() + " con " + giocatori.get(i).getVita() + " punti vita\n" + "Ruolo:Non identificato");
